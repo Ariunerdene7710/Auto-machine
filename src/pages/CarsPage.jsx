@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Filter, Search, X, Car, SlidersHorizontal } from 'lucide-react';
+import { X, Car, SlidersHorizontal } from 'lucide-react';
 import { carAPI } from '../services/api';
 import CarCard from '../components/CarCard';
+import { mockCars } from '../data/mockCars';
 
 const CarsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -22,8 +23,8 @@ const CarsPage = () => {
   const [sortBy, setSortBy] = useState('newest');
 
   const brands = ['Бүгд', 'Toyota', 'Lexus', 'Nissan', 'Honda', 'BMW', 'Mercedes-Benz', 'Audi', 'Hyundai', 'Kia', 'Mazda'];
-  const fuelTypes = ['Бүгд', 'Бензин', 'Дизель', 'Hybrid', 'Цахилгаан'];
-  const transmissions = ['Бүгд', 'Автомат', 'Механик'];
+  const fuelTypes = ['Бүгд', 'Gasoline', 'Diesel', 'Hybrid', 'Electric'];
+  const transmissions = ['Бүгд', 'Automatic', 'Manual'];
 
   useEffect(() => {
     fetchCars();
@@ -33,33 +34,24 @@ const CarsPage = () => {
     filterAndSortCars();
   }, [cars, filters, sortBy]);
 
-  const mockCars = [
-    { id: 1, brand: 'Toyota', model: 'Camry', year: 2023, price: 35000000, fuelType: 'Бензин', transmission: 'Автомат', location: 'Улаанбаатар', active: true },
-    { id: 2, brand: 'Lexus', model: 'RX', year: 2023, price: 75000000, fuelType: 'Бензин', transmission: 'Автомат', location: 'Улаанбаатар', active: true },
-    { id: 3, brand: 'Honda', model: 'Civic', year: 2022, price: 28000000, fuelType: 'Бензин', transmission: 'Механик', location: 'Улаанбаатар', active: true },
-    { id: 4, brand: 'Nissan', model: 'Qashqai', year: 2023, price: 32000000, fuelType: 'Дизель', transmission: 'Автомат', location: 'Улаанбаатар', active: true },
-    { id: 5, brand: 'BMW', model: '3 Series', year: 2022, price: 65000000, fuelType: 'Бензин', transmission: 'Автомат', location: 'Улаанбаатар', active: true },
-    { id: 6, brand: 'Mercedes-Benz', model: 'C-Class', year: 2023, price: 72000000, fuelType: 'Бензин', transmission: 'Автомат', location: 'Улаанбаатар', active: true },
-  ];
-
   const fetchCars = async () => {
     try {
       const searchQuery = searchParams.get('search');
       const brandParam = searchParams.get('brand');
-      
-      let response;
-      if (searchQuery) {
-        response = await carAPI.search({ keyword: searchQuery });
-      } else {
-        response = await carAPI.getAll();
-      }
-      
+
+      const response = searchQuery
+        ? await carAPI.search(searchQuery)
+        : await carAPI.getAll();
+
       const allCars = response.data || mockCars;
-      const activeCars = allCars.filter(car => car.active !== false);
+      const activeCars = allCars.filter((car) => car.active !== false);
       setCars(activeCars);
-      
+
       if (brandParam) {
-        setFilters(prev => ({ ...prev, brand: brandParam }));
+        const normalizedBrand = brands.find(
+          (brand) => brand.toLowerCase() === brandParam.toLowerCase() || brand.toLowerCase().includes(brandParam.toLowerCase())
+        );
+        setFilters((prev) => ({ ...prev, brand: normalizedBrand || brandParam }));
       }
     } catch (error) {
       console.error('Error fetching cars:', error);
@@ -73,25 +65,27 @@ const CarsPage = () => {
     let filtered = [...cars];
 
     if (filters.brand && filters.brand !== 'Бүгд') {
-      filtered = filtered.filter(c => c.brand === filters.brand);
+      filtered = filtered.filter((car) => car.brand === filters.brand);
     }
     if (filters.minPrice) {
-      filtered = filtered.filter(c => c.price >= parseFloat(filters.minPrice));
+      filtered = filtered.filter((car) => car.price >= parseFloat(filters.minPrice));
     }
     if (filters.maxPrice) {
-      filtered = filtered.filter(c => c.price <= parseFloat(filters.maxPrice));
+      filtered = filtered.filter((car) => car.price <= parseFloat(filters.maxPrice));
     }
     if (filters.year) {
-      filtered = filtered.filter(c => c.year === parseInt(filters.year));
+      filtered = filtered.filter((car) => car.year === parseInt(filters.year, 10));
     }
     if (filters.fuelType && filters.fuelType !== 'Бүгд') {
-      filtered = filtered.filter(c => c.fuelType === filters.fuelType);
+      filtered = filtered.filter((car) => car.fuelType === filters.fuelType);
     }
     if (filters.transmission && filters.transmission !== 'Бүгд') {
-      filtered = filtered.filter(c => c.transmission === filters.transmission);
+      filtered = filtered.filter((car) => car.transmission === filters.transmission);
     }
     if (filters.location) {
-      filtered = filtered.filter(c => c.location?.toLowerCase().includes(filters.location.toLowerCase()));
+      filtered = filtered.filter((car) =>
+        car.location?.toLowerCase().includes(filters.location.toLowerCase())
+      );
     }
 
     switch (sortBy) {
@@ -128,7 +122,7 @@ const CarsPage = () => {
     setSearchParams({});
   };
 
-  const hasActiveFilters = Object.values(filters).some(v => v && v !== 'Бүгд');
+  const hasActiveFilters = Object.values(filters).some((value) => value && value !== 'Бүгд');
 
   return (
     <div className="container-custom py-8">
@@ -141,44 +135,44 @@ const CarsPage = () => {
         <div className="hidden lg:block w-72 flex-shrink-0">
           <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-20">
             <h3 className="font-semibold text-gray-900 mb-4">Шүүлтүүр</h3>
-            
+
             <div className="mb-5">
               <label className="block text-sm font-medium text-gray-700 mb-2">Брэнд</label>
-              <select value={filters.brand} onChange={(e) => setFilters({...filters, brand: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                {brands.map(b => <option key={b} value={b}>{b}</option>)}
+              <select value={filters.brand} onChange={(e) => setFilters({ ...filters, brand: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                {brands.map((brand) => <option key={brand} value={brand}>{brand}</option>)}
               </select>
             </div>
 
             <div className="mb-5">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Үнэ (₮)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Үнэ</label>
               <div className="flex gap-2">
-                <input type="number" placeholder="Бага" value={filters.minPrice} onChange={(e) => setFilters({...filters, minPrice: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-                <input type="number" placeholder="Их" value={filters.maxPrice} onChange={(e) => setFilters({...filters, maxPrice: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                <input type="number" placeholder="Бага" value={filters.minPrice} onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                <input type="number" placeholder="Их" value={filters.maxPrice} onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
               </div>
             </div>
 
             <div className="mb-5">
               <label className="block text-sm font-medium text-gray-700 mb-2">Он</label>
-              <input type="number" placeholder="Жиш: 2020" value={filters.year} onChange={(e) => setFilters({...filters, year: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+              <input type="number" placeholder="Жишээ: 2020" value={filters.year} onChange={(e) => setFilters({ ...filters, year: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
             </div>
 
             <div className="mb-5">
               <label className="block text-sm font-medium text-gray-700 mb-2">Шатахуун</label>
-              <select value={filters.fuelType} onChange={(e) => setFilters({...filters, fuelType: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                {fuelTypes.map(f => <option key={f} value={f}>{f}</option>)}
+              <select value={filters.fuelType} onChange={(e) => setFilters({ ...filters, fuelType: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                {fuelTypes.map((fuelType) => <option key={fuelType} value={fuelType}>{fuelType}</option>)}
               </select>
             </div>
 
             <div className="mb-5">
               <label className="block text-sm font-medium text-gray-700 mb-2">Хурдны хайрцаг</label>
-              <select value={filters.transmission} onChange={(e) => setFilters({...filters, transmission: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                {transmissions.map(t => <option key={t} value={t}>{t}</option>)}
+              <select value={filters.transmission} onChange={(e) => setFilters({ ...filters, transmission: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                {transmissions.map((transmission) => <option key={transmission} value={transmission}>{transmission}</option>)}
               </select>
             </div>
 
             <div className="mb-5">
               <label className="block text-sm font-medium text-gray-700 mb-2">Байршил</label>
-              <input type="text" placeholder="Улаанбаатар..." value={filters.location} onChange={(e) => setFilters({...filters, location: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+              <input type="text" placeholder="Ulaanbaatar..." value={filters.location} onChange={(e) => setFilters({ ...filters, location: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
             </div>
 
             {hasActiveFilters && (
@@ -212,25 +206,27 @@ const CarsPage = () => {
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">Брэнд</label>
-                <select value={filters.brand} onChange={(e) => setFilters({...filters, brand: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                  {brands.map(b => <option key={b} value={b}>{b}</option>)}
+                <select value={filters.brand} onChange={(e) => setFilters({ ...filters, brand: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                  {brands.map((brand) => <option key={brand} value={brand}>{brand}</option>)}
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Үнэ (₮)</label>
+                <label className="block text-sm font-medium mb-2">Үнэ</label>
                 <div className="flex gap-2">
-                  <input type="number" placeholder="Бага" value={filters.minPrice} onChange={(e) => setFilters({...filters, minPrice: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-                  <input type="number" placeholder="Их" value={filters.maxPrice} onChange={(e) => setFilters({...filters, maxPrice: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                  <input type="number" placeholder="Бага" value={filters.minPrice} onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                  <input type="number" placeholder="Их" value={filters.maxPrice} onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
                 </div>
               </div>
-              <button onClick={clearFilters} className="w-full px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">Цэвэрлэх</button>
+              <button onClick={clearFilters} className="w-full px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+                Цэвэрлэх
+              </button>
             </div>
           )}
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 animate-pulse">
+              {[...Array(6)].map((_, index) => (
+                <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 animate-pulse">
                   <div className="bg-gray-300 h-48 rounded-lg mb-4"></div>
                   <div className="h-4 bg-gray-300 rounded mb-2"></div>
                   <div className="h-4 bg-gray-300 rounded w-2/3"></div>
@@ -245,7 +241,7 @@ const CarsPage = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {filteredCars.map(car => <CarCard key={car.id} car={car} />)}
+              {filteredCars.map((car) => <CarCard key={car.id} car={car} />)}
             </div>
           )}
         </div>

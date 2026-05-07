@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Package,
@@ -24,7 +24,6 @@ import toast from 'react-hot-toast';
 
 const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
   const { user, logout } = useAuth();
-  const location = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const handleLogout = () => {
@@ -82,10 +81,6 @@ const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
   ];
 
   const NavItem = ({ item }) => {
-    const isActive = item.exact 
-      ? location.pathname === item.path
-      : location.pathname.startsWith(item.path);
-
     return (
       <NavLink
         to={item.path}

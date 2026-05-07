@@ -4,6 +4,7 @@ import { ArrowRight, Car, Shield, Award, Clock, Fuel, Gauge, Calendar, Wrench } 
 import { carAPI } from '../services/api';
 import CarCard from '../components/CarCard';
 import HeroSection from '../components/HeroSection';
+import { mockCars } from '../data/mockCars';
 
 const HomePage = () => {
   const [featuredCars, setFeaturedCars] = useState([]);
@@ -12,15 +13,6 @@ const HomePage = () => {
   useEffect(() => {
     fetchCars();
   }, []);
-
-  const mockCars = [
-    { id: 1, brand: 'Toyota', model: 'Camry', year: 2023, price: 35000000, mileage: 15000, images: [], isFeatured: true, stock: 2 },
-    { id: 2, brand: 'Lexus', model: 'RX', year: 2023, price: 75000000, mileage: 8000, images: [], isFeatured: true, stock: 1 },
-    { id: 3, brand: 'Honda', model: 'Civic', year: 2022, price: 28000000, mileage: 25000, images: [], isFeatured: true, stock: 3 },
-    { id: 4, brand: 'Nissan', model: 'Qashqai', year: 2023, price: 32000000, mileage: 12000, images: [], isFeatured: true, stock: 2 },
-    { id: 5, brand: 'BMW', model: '3 Series', year: 2022, price: 65000000, mileage: 30000, images: [], isFeatured: true, stock: 1 },
-    { id: 6, brand: 'Mercedes', model: 'C-Class', year: 2023, price: 72000000, mileage: 5000, images: [], isFeatured: true, stock: 1 },
-  ];
 
   const fetchCars = async () => {
     try {

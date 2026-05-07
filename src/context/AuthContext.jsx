@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext } from 'react';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -13,24 +13,24 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
+  const [user, setUser] = useState(() => {
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
-    
-    if (token && storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
+
+    if (!token || !storedUser) {
+      return null;
     }
-    setLoading(false);
-  }, []);
+
+    try {
+      return JSON.parse(storedUser);
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      return null;
+    }
+  });
+  const [loading] = useState(false);
 
   const login = async (credentials) => {
     try {

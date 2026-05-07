@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Minus, Plus, ShoppingCart, ArrowLeft, Star, Truck, Shield, Award, Car, Fuel, Gauge, Calendar, MapPin, CheckCircle, Info } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, ArrowLeft, Star, Truck, Shield, Award, Car, Fuel, Gauge, Calendar, MapPin, CheckCircle } from 'lucide-react';
 import { carAPI } from '../services/api';
 import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
+import { mockCars } from '../data/mockCars';
 
 const getImageUrl = (url) => {
   if (!url) return null;
@@ -31,8 +32,13 @@ const CarDetailPage = () => {
       setCar(response.data);
     } catch (error) {
       console.error('Error fetching car:', error);
-      toast.error('Машины мэдээлэл ачааллахад алдаа гарлаа');
-      navigate('/cars');
+      const fallbackCar = mockCars.find((item) => String(item.id) === String(id));
+      if (fallbackCar) {
+        setCar(fallbackCar);
+      } else {
+        toast.error('Машины мэдээлэл олдсонгүй');
+        navigate('/cars');
+      }
     } finally {
       setLoading(false);
     }
@@ -44,9 +50,8 @@ const CarDetailPage = () => {
   };
 
   const formatPrice = (price) => new Intl.NumberFormat('mn-MN').format(price || 0) + ' ₮';
-  const formatMileage = (mileage) => mileage ? new Intl.NumberFormat('mn-MN').format(mileage) + ' км' : '-';
-
-  const handleImageError = (index) => setImageErrors(prev => ({ ...prev, [index]: true }));
+  const formatMileage = (mileage) => mileage ? `${new Intl.NumberFormat('mn-MN').format(mileage)} км` : '-';
+  const handleImageError = (index) => setImageErrors((prev) => ({ ...prev, [index]: true }));
 
   if (loading) {
     return (
@@ -54,7 +59,11 @@ const CarDetailPage = () => {
         <div className="animate-pulse">
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-gray-300 h-96 rounded-lg"></div>
-            <div className="space-y-4"><div className="h-8 bg-gray-300 rounded w-3/4"></div><div className="h-6 bg-gray-300 rounded w-1/4"></div><div className="h-4 bg-gray-300 rounded"></div></div>
+            <div className="space-y-4">
+              <div className="h-8 bg-gray-300 rounded w-3/4"></div>
+              <div className="h-6 bg-gray-300 rounded w-1/4"></div>
+              <div className="h-4 bg-gray-300 rounded"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -79,16 +88,23 @@ const CarDetailPage = () => {
               <img src={getImageUrl(images[selectedImage])} alt={carName} className="w-full h-full object-cover" onError={() => handleImageError(selectedImage)} />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                <Car className="w-24 h-24 text-gray-400 mb-4" /><span className="text-gray-500">Зураг байхгүй</span>
+                <Car className="w-24 h-24 text-gray-400 mb-4" />
+                <span className="text-gray-500">Зураг байхгүй</span>
               </div>
             )}
           </div>
-          
+
           {images.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
               {images.map((url, index) => (
                 <button key={index} onClick={() => setSelectedImage(index)} className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition ${selectedImage === index ? 'border-blue-600 shadow-md' : 'border-transparent hover:border-gray-300'}`}>
-                  {!imageErrors[index] ? <img src={getImageUrl(url)} alt={`${carName} - ${index + 1}`} className="w-full h-full object-cover" onError={() => handleImageError(index)} /> : <div className="w-full h-full flex items-center justify-center bg-gray-100"><Car className="w-6 h-6 text-gray-400" /></div>}
+                  {!imageErrors[index] ? (
+                    <img src={getImageUrl(url)} alt={`${carName} - ${index + 1}`} className="w-full h-full object-cover" onError={() => handleImageError(index)} />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                      <Car className="w-6 h-6 text-gray-400" />
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
@@ -103,14 +119,16 @@ const CarDetailPage = () => {
               {car.isFeatured && <span className="bg-yellow-500 text-white px-2 py-0.5 rounded-full text-xs font-semibold">ОНЦЛОХ</span>}
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">{carName}</h1>
-            
+
             <div className="flex items-center gap-4 mb-4">
-              <div className="flex items-center">{[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />)}</div>
+              <div className="flex items-center">{[...Array(5)].map((_, index) => <Star key={index} className="w-5 h-5 text-yellow-400 fill-current" />)}</div>
               <span className="text-gray-600">(12 үнэлгээ)</span>
             </div>
 
             <div className="text-4xl font-bold text-blue-600 mb-4">{formatPrice(car.price)}</div>
-            {car.originalPrice && car.originalPrice > car.price && <span className="text-gray-400 line-through ml-2">{formatPrice(car.originalPrice)}</span>}
+            {car.originalPrice && car.originalPrice > car.price && (
+              <span className="text-gray-400 line-through ml-2">{formatPrice(car.originalPrice)}</span>
+            )}
 
             <div className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${car.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
               {car.stock > 0 ? `${car.stock} машин үлдсэн` : 'Зарагдсан'}
@@ -133,7 +151,14 @@ const CarDetailPage = () => {
           {car.features && car.features.length > 0 && (
             <div>
               <h3 className="font-semibold text-gray-900 mb-3">Онцлогууд</h3>
-              <div className="flex flex-wrap gap-2">{car.features.map((feature, idx) => <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"><CheckCircle className="inline w-3 h-3 mr-1 text-green-500" />{feature}</span>)}</div>
+              <div className="flex flex-wrap gap-2">
+                {car.features.map((feature, index) => (
+                  <span key={index} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
+                    <CheckCircle className="inline w-3 h-3 mr-1 text-green-500" />
+                    {feature}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
 

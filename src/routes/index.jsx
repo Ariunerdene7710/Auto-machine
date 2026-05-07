@@ -7,6 +7,8 @@ import AdminLayout from '../components/admin/AdminLayout';
 
 // Public Pages
 import HomePage from '../pages/HomePage';
+import CarsPage from '../pages/CarsPage';
+import CarDetailPage from '../pages/CarDetailPage';
 import ProductsPage from '../pages/ProductsPage';
 import ProductDetailPage from '../pages/ProductDetailPage';
 import CartPage from '../pages/CartPage';
@@ -44,6 +46,8 @@ function AppRoutes() {
       {/* Public Routes with Main Layout */}
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
+        <Route path="cars" element={<CarsPage />} />
+        <Route path="cars/:id" element={<CarDetailPage />} />
         <Route path="products" element={<ProductsPage />} />
         <Route path="products/:id" element={<ProductDetailPage />} />
         <Route path="cart" element={<CartPage />} />

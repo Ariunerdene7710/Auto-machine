@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { X, Upload, Loader } from 'lucide-react';
-import { imageAPI } from '../../services/imageApi';
 import toast from 'react-hot-toast';
 
 const ProductForm = ({ product, onSubmit, onCancel, loading }) => {

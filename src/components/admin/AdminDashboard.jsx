@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Package, ShoppingBag, Users, DollarSign, TrendingUp,
+  Package, ShoppingBag, Users, DollarSign,
   Clock, CheckCircle, XCircle, Truck, RefreshCw, AlertCircle,
-  Activity, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { productAPI, orderAPI } from '../../services/api';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, AreaChart, Area, Legend
+  PieChart, Pie, Cell, Legend
 } from 'recharts';
 import toast from 'react-hot-toast';
 
@@ -32,7 +31,6 @@ const AdminDashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [chartData, setChartData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
-  const [revenueData, setRevenueData] = useState([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -82,8 +80,6 @@ const AdminDashboard = () => {
 
       prepareChartData(orders);
       prepareCategoryData(products);
-      prepareRevenueData(orders);
-
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast.error('Мэдээлэл ачааллахад алдаа гарлаа');
@@ -127,27 +123,6 @@ const AdminDashboard = () => {
     }));
 
     setCategoryData(categoryArray);
-  };
-
-  const prepareRevenueData = (orders) => {
-    const monthlyRevenue = {};
-    
-    orders.forEach(order => {
-      if (order.status === 'DELIVERED') {
-        const month = new Date(order.createdAt).toLocaleDateString('mn-MN', { month: 'short' });
-        if (!monthlyRevenue[month]) {
-          monthlyRevenue[month] = 0;
-        }
-        monthlyRevenue[month] += order.totalAmount || 0;
-      }
-    });
-
-    const revenueArray = Object.entries(monthlyRevenue).map(([month, amount]) => ({
-      month,
-      amount
-    }));
-
-    setRevenueData(revenueArray);
   };
 
   const handleRefresh = async () => {

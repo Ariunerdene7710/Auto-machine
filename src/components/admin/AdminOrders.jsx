@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { 
-  Search, Eye, Package, Truck, CheckCircle, XCircle, 
-  Clock, MapPin, Phone, Mail, Calendar, DollarSign,
-  ChevronDown, ChevronUp, Filter
+  Search, Package, Truck, CheckCircle, XCircle, 
+  Clock, MapPin, Phone, Mail, ChevronDown, ChevronUp, Filter, User
 } from 'lucide-react';
 import { orderAPI } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -75,7 +73,7 @@ const AdminOrders = () => {
       await orderAPI.updateStatus(orderId, newStatus);
       toast.success('Захиалгын төлөв шинэчлэгдлээ');
       fetchOrders();
-    } catch (error) {
+    } catch {
       toast.error('Төлөв шинэчлэхэд алдаа гарлаа');
     }
   };

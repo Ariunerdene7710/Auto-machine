@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Plus, Edit, Trash2, Search, Car, Eye, ToggleLeft, ToggleRight, Filter, X, Loader } from 'lucide-react';
-import { carAPI, categoryAPI, imageAPI } from '../../services/api';
+import { carAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const getImageUrl = (url) => {
@@ -20,14 +20,12 @@ const CarForm = ({ car, onSubmit, onCancel, loading: submitting }) => {
   const [previewUrls, setPreviewUrls] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [categories, setCategories] = useState([]);
   const [featureInput, setFeatureInput] = useState('');
 
   const fuelTypes = ['Бензин', 'Дизель', 'Hybrid', 'Цахилгаан'];
   const transmissions = ['Автомат', 'Механик'];
 
   useEffect(() => {
-    fetchCategories();
     if (car) {
       setFormData({
         brand: car.brand || '', model: car.model || '', year: car.year || '', price: car.price || '',
@@ -40,15 +38,6 @@ const CarForm = ({ car, onSubmit, onCancel, loading: submitting }) => {
       if (car.imageUrls) setExistingImages(car.imageUrls);
     }
   }, [car]);
-
-  const fetchCategories = async () => {
-    try {
-      const response = await categoryAPI.getAll();
-      setCategories(response.data || []);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

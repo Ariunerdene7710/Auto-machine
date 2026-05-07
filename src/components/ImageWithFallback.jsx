@@ -7,13 +7,11 @@ const ImageWithFallback = ({
   alt = 'Image', 
   className = '', 
   fallbackClassName = '',
-  width = 400,
-  height = 300,
   showLoading = true
 }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [imageSrc, setImageSrc] = useState(() => {
+  const [imageSrc] = useState(() => {
     if (!src) return null;
     return imageAPI.getImageUrl(src);
   });

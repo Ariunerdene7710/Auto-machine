@@ -157,7 +157,7 @@ const AdminProducts = () => {
       await productAPI.update(product.id, formData);
       toast.success(`Бүтээгдэхүүн ${updatedProduct.active ? 'идэвхжлээ' : 'идэвхгүй боллоо'}`);
       fetchProducts();
-    } catch (error) {
+    } catch {
       toast.error('Төлөв өөрчлөхөд алдаа гарлаа');
     }
   };

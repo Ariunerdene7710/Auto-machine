@@ -30,7 +30,16 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        console.error('[API Error]', error.response?.status, error.response?.data);
+        if (!error.response) {
+            console.error('[API Network Error]', error.message, {
+                baseURL: error.config?.baseURL,
+                url: error.config?.url,
+                method: error.config?.method
+            });
+            return Promise.reject(error);
+        }
+
+        console.error('[API Error]', error.response.status, error.response.data);
         if (error.response?.status === 401) {
             localStorage.removeItem('token');
             window.location.href = '/login';
@@ -40,9 +49,26 @@ api.interceptors.response.use(
 );
 
 // ============= AUTH API =============
+const postWithFallback = async (paths, payload) => {
+    let lastError;
+
+    for (const path of paths) {
+        try {
+            return await api.post(path, payload);
+        } catch (error) {
+            lastError = error;
+            if (error.response?.status !== 404) {
+                throw error;
+            }
+        }
+    }
+
+    throw lastError;
+};
+
 export const authAPI = {
-    login: (credentials) => api.post('/auth/login', credentials),
-    register: (userData) => api.post('/auth/register', userData),
+    login: (credentials) => postWithFallback(['/auth/login', '/api/auth/login'], credentials),
+    register: (userData) => postWithFallback(['/auth/register', '/api/auth/register'], userData),
 };
 
 // ============= PRODUCT API (alias for carAPI) =============

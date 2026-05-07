@@ -31,7 +31,7 @@ const CarCard = ({ car }) => {
     return new Intl.NumberFormat('mn-MN').format(mileage) + ' км';
   };
 
-  const imageUrl = getImageUrl(car.images?.[0]);
+  const imageUrl = getImageUrl(car.images?.[0] || car.imageUrls?.[0]);
   const carName = `${car.brand || ''} ${car.model || ''}`.trim();
 
   return (
